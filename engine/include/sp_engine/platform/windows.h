@@ -2,12 +2,23 @@
 // Created by liuso on 2021/11/20.
 //
 
-#ifndef SP_ENGINE_PALTFORM_WINDOWS_H_
-#define SP_ENGINE_PALTFORM_WINDOWS_H_
+#pragma once
+#include <string>
 
-class Window {
-  virtual void OpenWindow() = 0;
-  virtual void Update() = 0;
+namespace SP {
+
+struct WindowData {
+  std::string title;
+  uint32_t width;
+  uint32_t height;
 };
 
-#endif //SP_ENGINE_PALTFORM_WINDOWS_H_
+class Window {
+ public:
+  virtual void OpenWindow(WindowData window_data) = 0;
+  virtual bool Update() = 0;
+};
+
+}
+
+
