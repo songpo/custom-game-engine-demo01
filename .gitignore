@@ -3,7 +3,7 @@ bin/
 build/
 release/
 debug/
-engine/external/
+/engine/external/
 
 ############# IDEA ##############
 .idea
