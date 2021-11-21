@@ -4,3 +4,6 @@ build/
 release/
 debug/
 engine/external/
+
+############# IDEA ##############
+.idea
