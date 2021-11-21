@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv) {
   // 创建应用
-  auto *game = CreateGame();
+  auto *game = SP::CreateGame();
 
   // 运行应用
   game->Run();

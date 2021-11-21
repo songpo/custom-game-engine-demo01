@@ -6,7 +6,9 @@
 #include "sp_engine/platform/entry_point.h"
 #include "sp_engine/platform/game.h"
 
-class MyGame : public Game {
+using namespace SP;
+
+ class MyGame : public Game {
  public:
   explicit MyGame(std::string title) : Game(std::move(title)) {
     std::cout << "Hello, welcome to my game!" << std::endl;
@@ -18,6 +20,6 @@ class MyGame : public Game {
   }
 };
 
-Game* CreateGame() {
+Game* SP::CreateGame() {
   return new MyGame("Test change window title!");
 }

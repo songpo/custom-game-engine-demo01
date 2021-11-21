@@ -3,9 +3,19 @@
 //
 
 #pragma once
+
+#include <any>
+#include <tuple>
 #include <string>
+#include <unordered_map>
 
 namespace SP {
+
+enum SurfaceArgs {
+  INSTANCE,
+  ALLOCATORS,
+  OUT_SURFACE
+};
 
 struct WindowData {
   std::string title;
@@ -15,8 +25,11 @@ struct WindowData {
 
 class Window {
  public:
-  virtual void OpenWindow(WindowData window_data) = 0;
+  virtual void OpenWindow(WindowData) = 0;
   virtual bool Update() = 0;
+
+  virtual std::pair<int, int> GetWindowExtents() = 0;
+  virtual void RequestDrawSurface(std::unordered_map<SurfaceArgs, std::any>) = 0;
 };
 
 }

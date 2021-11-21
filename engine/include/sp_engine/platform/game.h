@@ -4,6 +4,8 @@
 
 #pragma once
 
+namespace SP {
+
 class Game {
  public:
   Game();
@@ -14,11 +16,10 @@ class Game {
 
  protected:
   virtual void PhysicsUpdate(float deltaTime) {};
-  virtual void Update(float deltaTime) { };
-  virtual void Draw() { };
+  virtual void Update(float deltaTime) {};
 
  private:
-  static void initializeServices();
+  void initializeServices();
   static void shutdownServices();
 
  private:
@@ -27,4 +28,5 @@ class Game {
 
 };
 
-extern Game* CreateGame();
+extern Game *CreateGame();
+}

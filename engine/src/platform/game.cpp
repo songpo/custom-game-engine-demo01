@@ -6,6 +6,9 @@
 #include "sp_engine/platform/game.h"
 #include "sp_engine/service_locator.h"
 #include "multiplatform_window.h"
+#include "rendering/vulkan/vulkan_renderer.h"
+
+namespace SP {
 
 Game::Game() : Game("My Game") {
 
@@ -17,24 +20,10 @@ Game::~Game() {
   shutdownServices();
 }
 void Game::Run() {
-//  SP::WindowData window_data;
-//  window_data.width = 800;
-//  window_data.height = 600;
-//  window_data.title = _title;
-
-  SP::WindowData window_data {
-      .title = _title,
-      .width = 800,
-      .height = 600
-  };
-
-  // Open the window
-  SP::ServiceLocator::GetWindow()->OpenWindow(window_data);
-
   // Run the application
   while (_running) {
     // Update the window
-    if (SP::ServiceLocator::GetWindow()->Update()) {
+    if (ServiceLocator::GetWindow()->Update()) {
       _running = false;
       continue;
     }
@@ -49,18 +38,34 @@ void Game::Run() {
     PhysicsUpdate(deltaTime);
 
     // Draw
-    Draw();
+    ServiceLocator::GetRenderer()->RenderFrame();
   }
 }
 
 void Game::initializeServices() {
   // Provide a window
-  SP::ServiceLocator::Provide(new SP::MultiPlatformWindow());
+  ServiceLocator::Provide(new MultiPlatformWindow());
+
+  // Open the window
+  ServiceLocator::GetWindow()->OpenWindow(
+      {
+          .title = _title,
+          .width = 800,
+          .height = 600
+      }
+  );
 
   // Initialize input stream
 
   // Initialize the render
+  RendererSettings settings{
+      .ApplicationName = _title
+  };
+
+  ServiceLocator::Provide(new VulkanRenderer(), settings);
 }
 void Game::shutdownServices() {
-  SP::ServiceLocator::ShutdownServices();
+  ServiceLocator::ShutdownServices();
+}
+
 }
