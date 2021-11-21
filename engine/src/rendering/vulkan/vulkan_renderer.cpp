@@ -21,6 +21,7 @@ void VulkanRenderer::Init(RendererSettings settings) {
   createDefaultRenderPass();
   createFrameBuffers();
   createSyncStructures();
+  createPipeLines();
 }
 void VulkanRenderer::Shutdown() {
   vkDeviceWaitIdle(_device);
@@ -257,6 +258,21 @@ void VulkanRenderer::createSyncStructures() {
   VkSemaphoreCreateInfo semaphoreCreateInfo{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
   VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_present_semaphore));
   VK_CHECK(vkCreateSemaphore(_device, &semaphoreCreateInfo, nullptr, &_render_semaphore));
+}
+void VulkanRenderer::createPipeLines() {
+  VkShaderModule triangleFragShader;
+  if (!VulkanUtilities::LoadShaderModule("shaders/triangle.frag.spv", _device, triangleFragShader)) {
+    std::cout << "Failed load triangle fragment shader module" << std::endl;
+  } else {
+    std::cout << "Load triangle fragment shader module success" << std::endl;
+  }
+
+  VkShaderModule triangleVertShader;
+  if (!VulkanUtilities::LoadShaderModule("shaders/triangle.vert.spv", _device, triangleVertShader)) {
+    std::cout << "Failed load triangle vertex shader module" << std::endl;
+  } else {
+    std::cout << "Load triangle shader vertex module success" << std::endl;
+  }
 }
 
 }

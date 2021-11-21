@@ -23,6 +23,7 @@ class VulkanRenderer : public Renderer {
   void createDefaultRenderPass();
   void createFrameBuffers();
   void createSyncStructures();
+  void createPipeLines();
 
  private:
   // TODO Temporary frame number
