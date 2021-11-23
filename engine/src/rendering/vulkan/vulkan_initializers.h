@@ -20,6 +20,18 @@ class VulkanInitializers {
       uint32_t count = 1,
       VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY
   );
+
+  static VkPipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo(
+      VkShaderStageFlagBits stage,
+      VkShaderModule module
+  );
+
+  static VkPipelineVertexInputStateCreateInfo GetPipelineVertexInputStateCreateInfo();
+  static VkPipelineInputAssemblyStateCreateInfo GetPipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology);
+  static VkPipelineRasterizationStateCreateInfo GetPipelineRasterizationStateCreateInfo(VkPolygonMode polygonMode);
+  static VkPipelineMultisampleStateCreateInfo GetPipelineMultisampleStateCreateInfo();
+  static VkPipelineColorBlendAttachmentState GetPipelineColorBlendAttachmentState();
+  static VkPipelineLayoutCreateInfo GetPipelineLayoutCreateInfo();
 };
 
 }

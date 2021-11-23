@@ -5,10 +5,11 @@
 #include "vulkan_renderer.h"
 
 #include <VkBootstrap.h>
-#include <sp_engine/service_locator.h>
+#include "sp_engine/service_locator.h"
 #include "vulkan_initializers.h"
 #include "vulkan_types.h"
 #include "vulkan_utilities.h"
+#include "vulkan_pipeline_builder.h"
 
 namespace SP {
 
@@ -26,6 +27,8 @@ void VulkanRenderer::Init(RendererSettings settings) {
 void VulkanRenderer::Shutdown() {
   vkDeviceWaitIdle(_device);
 
+  vkDestroyPipeline(_device, _triangle_pipeline, nullptr);
+  vkDestroyPipelineLayout(_device, _triangle_pipeline_layout, nullptr);
   vkDestroyFence(_device, _render_fence, nullptr);
   vkDestroySemaphore(_device, _render_semaphore, nullptr);
   vkDestroySemaphore(_device, _present_semaphore, nullptr);
@@ -57,12 +60,12 @@ void VulkanRenderer::RenderFrame() {
 
   VK_CHECK(vkResetCommandBuffer(_main_command_buffer, 0));
 
-  VkCommandBuffer cmdBuffer = _main_command_buffer;
+  VkCommandBuffer cmd = _main_command_buffer;
 
   VkCommandBufferBeginInfo commandBufferBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
   commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-  VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
+  VK_CHECK(vkBeginCommandBuffer(cmd, &commandBufferBeginInfo));
 
   float flashColor = abs(sin((float) _frame_number / 120.f));
   VkClearValue clearValue{
@@ -83,11 +86,14 @@ void VulkanRenderer::RenderFrame() {
   renderPassBeginInfo.clearValueCount = 1;
   renderPassBeginInfo.pClearValues = &clearValue;
 
-  vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBeginRenderPass(cmd, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
   // Draw call
-  vkCmdEndRenderPass(cmdBuffer);
-  VK_CHECK(vkEndCommandBuffer(cmdBuffer));
+  vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _triangle_pipeline);
+  vkCmdDraw(cmd, 3, 1, 0, 0);
+
+  vkCmdEndRenderPass(cmd);
+  VK_CHECK(vkEndCommandBuffer(cmd));
 
   VkSubmitInfo submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO};
 
@@ -273,6 +279,49 @@ void VulkanRenderer::createPipeLines() {
   } else {
     std::cout << "Load triangle shader vertex module success" << std::endl;
   }
+
+  auto pipelineLayoutInfo = VulkanInitializers::GetPipelineLayoutCreateInfo();
+  VK_CHECK(vkCreatePipelineLayout(_device, &pipelineLayoutInfo, nullptr, &_triangle_pipeline_layout));
+
+  /**
+   * Temporary pipeline building
+   */
+  VulkanPipelineBuilder pipelineBuilder;
+  pipelineBuilder._shaderStages.push_back(
+      VulkanInitializers::GetPipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, triangleVertShader)
+  );
+  pipelineBuilder._shaderStages.push_back(
+      VulkanInitializers::GetPipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, triangleFragShader)
+  );
+
+  pipelineBuilder._vertexInputState = VulkanInitializers::GetPipelineVertexInputStateCreateInfo();
+  pipelineBuilder._inputAssemblyState =
+      VulkanInitializers::GetPipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+
+  // build the viewport
+  pipelineBuilder._view_port = {
+      .x = 0.f,
+      .y = 0.f,
+      .width = static_cast<float>(_window_extent.width),
+      .height = static_cast<float>(_window_extent.height),
+      .minDepth = 0.f,
+      .maxDepth = 1.f
+  };
+
+  pipelineBuilder._scissor = {
+      .offset = {0, 0},
+      .extent=_window_extent
+  };
+
+  pipelineBuilder._rasterizer = VulkanInitializers::GetPipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
+  pipelineBuilder._multisampleState = VulkanInitializers::GetPipelineMultisampleStateCreateInfo();
+  pipelineBuilder._colorBlendAttachment = VulkanInitializers::GetPipelineColorBlendAttachmentState();
+  pipelineBuilder._pipelineLayout = _triangle_pipeline_layout;
+
+  _triangle_pipeline = pipelineBuilder.Build(_device, _render_pass);
+
+  vkDestroyShaderModule(_device, triangleVertShader, nullptr);
+  vkDestroyShaderModule(_device, triangleFragShader, nullptr);
 }
 
 }

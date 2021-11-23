@@ -70,6 +70,12 @@ class VulkanRenderer : public Renderer {
   VkSemaphore _present_semaphore;
   VkSemaphore _render_semaphore;
   VkFence _render_fence;
+
+  /**
+   * Pipelines
+   */
+  VkPipelineLayout _triangle_pipeline_layout;
+  VkPipeline _triangle_pipeline;
 };
 
 }
